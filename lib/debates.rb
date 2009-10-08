@@ -8,9 +8,9 @@ class Debates
 
   attr_reader :speeches
 
-	@@cache = {}
+  @@cache = {}
   
-	def initialize speeches
+  def initialize speeches
     @speeches = speeches 
   end
 
@@ -22,16 +22,16 @@ class Debates
 
   def self.for year, month, day 
     key = "#{year}-#{month}-#{day}.xml"
-		debates = from_cache key
-		if debates.nil? then
-			speeches = []
-		  Hpricot.XML(open(LOCATION_URI + key)).search("//speech").collect do |speech|
-			  speeches << Speech.new(speech[:id], speech[:time], speech[:speakername], (speech/"//*/text()").join)
-			end 
-			debates = Debates.new(speeches)
-			add_to_cache key, debates
-		end
-		debates
+    debates = from_cache key
+    if debates.nil? then
+      speeches = []
+      Hpricot.XML(open(LOCATION_URI + key)).search("//speech").collect do |speech|
+        speeches << Speech.new(speech[:id], speech[:time], speech[:speakername], (speech/"//*/text()").join)
+      end 
+      debates = Debates.new(speeches)
+      add_to_cache key, debates
+    end
+    debates
   end
 
   def words
@@ -47,14 +47,14 @@ class Debates
   private
 
   def self.add_to_cache key, debates
-		@@cache[key] = debates
-	end
+    @@cache[key] = debates
+  end
  
   def self.from_cache key
-		@@cache[key]
-	end
+    @@cache[key]
+  end
 
-	def calc_top_words top_n
+  def calc_top_words top_n
     word_count =Hash.new(0)
     words.each { |word| word_count[word] += 1  unless word.empty?}
     word_count = word_count.sort_by {|x,y| -y }
