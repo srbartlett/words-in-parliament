@@ -1,0 +1,32 @@
+README
+
+= Words in Parliament
+
+== Overview
+
+Words in Parliament visualizes the most frequently used words in the 
+Australian House of Representatives.
+
+Data comes from OpenAustralia, a website that provides the Australian Hansard 
+in a easy to consume format (along with heaps of other good stuff to keep tabs
+on representatives in Parliament).
+
+
+== Dependencies
+
+  $ sudo gem install sinatra
+
+== Setup
+
+Run the server:
+
+  $ ruby main.rb
+
+Point your browser at:
+  http://localhost:4567/
+
+== API
+
+Top words for a given date
+http://localhost:4567/api/representatives/words/for/:year/:month/:day/top:n
+
