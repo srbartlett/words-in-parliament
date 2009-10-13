@@ -1,4 +1,3 @@
-require 'stop_words'
 
 class Speech
   attr_accessor :sid, :time, :speeker, :content
@@ -14,12 +13,5 @@ class Speech
   def words
     content.downcase.split(/[^a-zA-Z]/)
   end
-
-  def words_without_stopwords
-    words.select do |word|
-      !StopWords.words.include?(word.downcase.strip)
-    end
-  end
-
 end
 

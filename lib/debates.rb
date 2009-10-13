@@ -1,6 +1,7 @@
 require 'hpricot'
 require 'open-uri'
 require 'speech'
+require 'stop_words'
 
 class Debates
 
@@ -25,6 +26,7 @@ class Debates
     debates = from_cache key
     if debates.nil? then
       speeches = []
+      #Hpricot.XML(open('./2009-09-15.xml')).search("//speech").collect do |speech|
       Hpricot.XML(open(LOCATION_URI + key)).search("//speech").collect do |speech|
         speeches << Speech.new(speech[:id], speech[:time], speech[:speakername], (speech/"//*/text()").join)
       end 
@@ -36,12 +38,27 @@ class Debates
 
   def words
     @speeches.collect do |speech|
-      speech.words_without_stopwords
+      speech.words.select do |word|
+        yield word
+      end 
     end.flatten
   end
 
   def top_most_frequent_words top_n = 20
     @top_most ||= calc_top_words top_n
+  end
+
+  def top_trigram_words top_n = 20
+    tri_grams = Hash.new(0)
+    all_words = words { |word| true unless word.empty? } 
+    
+    (all_words.length-2).times do |i|
+      tri = all_words[i] + ' ' + all_words[i+1] + ' ' + all_words[i+2]
+      tri_grams[tri] += 1
+    end
+
+    tri_grams = tri_grams.sort{|a,b| b[1] <=> a[1]}
+    tri_grams[0..top_n-1].map { |w| {:word => w[0], :frequency => w[1], :max_frequency => tri_grams.first[1]} }
   end
 
   private
@@ -56,7 +73,9 @@ class Debates
 
   def calc_top_words top_n
     word_count =Hash.new(0)
-    words.each { |word| word_count[word] += 1  unless word.empty?}
+    words do |word|
+       !StopWords.words.include?(word.downcase.strip)
+    end.each { |word| word_count[word] += 1  unless word.empty?}
     word_count = word_count.sort_by {|x,y| -y }
     top_n = word_count.size > top_n.to_i ? top_n.to_i : word_count.size
     word_count[0..top_n-1].map { |w| {:word => w[0], :frequency => w[1], :max_frequency => word_count.first[1]} }
