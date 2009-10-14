@@ -44,22 +44,10 @@ class Debates
     end.flatten
   end
 
-  def top_most_frequent_words top_n = 20
-    @top_most ||= calc_top_words top_n
+  def top_most_frequent_words ngram, top_n = 20
+    calc_top_words ngram, top_n
   end
 
-  def top_trigram_words top_n = 20
-    tri_grams = Hash.new(0)
-    all_words = words { |word| true unless word.empty? } 
-    
-    (all_words.length-2).times do |i|
-      tri = all_words[i] + ' ' + all_words[i+1] + ' ' + all_words[i+2]
-      tri_grams[tri] += 1
-    end
-
-    tri_grams = tri_grams.sort{|a,b| b[1] <=> a[1]}
-    tri_grams[0..top_n-1].map { |w| {:word => w[0], :frequency => w[1], :max_frequency => tri_grams.first[1]} }
-  end
 
   private
 
@@ -71,14 +59,26 @@ class Debates
     @@cache[key]
   end
 
-  def calc_top_words top_n
-    word_count =Hash.new(0)
-    words do |word|
-       !StopWords.words.include?(word.downcase.strip)
-    end.each { |word| word_count[word] += 1  unless word.empty?}
-    word_count = word_count.sort_by {|x,y| -y }
-    top_n = word_count.size > top_n.to_i ? top_n.to_i : word_count.size
-    word_count[0..top_n-1].map { |w| {:word => w[0], :frequency => w[1], :max_frequency => word_count.first[1]} }
+  def calc_top_words ngram, top_n
+    ngrams = Hash.new(0)
+    if ngram > 1 then
+      ngram = 3 if ngram > 3
+      all_words = words { |word| true unless word.empty? } 
+    
+      (all_words.length-2).times do |i|
+        tuple = []
+        ngram.times { |posn| tuple << all_words[posn + i] } 
+        ngrams[tuple.join(' ')] += 1
+      end
+    else
+      words do |word|
+        !StopWords.words.include?(word.downcase.strip)
+      end.each { |word| ngrams[word] += 1  unless word.empty?}
+    end
+    ngrams = ngrams.sort_by {|x,y| -y }
+    
+    top_n = ngrams.size > top_n.to_i ? top_n.to_i : ngrams.size
+    ngrams[0..top_n-1].map { |w| {:word => w[0], :frequency => w[1], :max_frequency => ngrams.first[1]} }
   end
 
 end

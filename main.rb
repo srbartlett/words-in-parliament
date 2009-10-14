@@ -10,9 +10,9 @@ get '/' do
   redirect 'index.html'
 end
 
-get '/api/representatives/words/for/:year/:month/:day/top:n' do |year, month, day, top_n| 
+get '/api/representatives/words/for/:year/:month/:day/top:n/ngram:n' do |year, month, day, top_n, ngram| 
   content_type :json  
-  Debates.for(year, month, day).top_most_frequent_words(top_n).to_json
+  Debates.for(year, month, day).top_most_frequent_words(ngram.to_i, top_n.to_i).to_json
 end
 
 get '/api/representatives/words/last' do 

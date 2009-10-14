@@ -8,24 +8,36 @@
  $.getJSON('http://localhost:4567/api/representatives/words/last',  function(json) {
    var parts = json.split('-');
    $('#date').html(parts[2] + '-' + parts[1] + '-' + parts[0])
-   $.getJSON('http://localhost:4567/api/representatives/words/for/' + parts[0] + "/" + parts[1] + "/" + parts[2] + "/top20",  function(data) {
-    $(data).each(function(i,word) {
-       var content = "<li>"
-       content = content + '<span class="word_size" style="width:' + (word.frequency / word.max_frequency) * 100 + '%">100%</span>'
-       content = content + '<span class="word_frequency">' + word.frequency + '</span>'
-       content = content + '<span class="word_name"><a href="#">' + word.word + '</a></span>'
-       content = content + "</li>"
-       $(content).appendTo("#word_list");
+   $('#doit').click(function() {
+      $("#word_list").html('');
+      $.getJSON('http://localhost:4567/api/representatives/words/for/' + parts[0] + "/" + parts[1] +
+      "/" + parts[2] + "/top20/ngram" + $('#ngram').val(), function(data) {
+      $(data).each(function(i,word) {
+        var content = "<li>"
+        content = content + '<span class="word_size" style="width:' + (word.frequency / word.max_frequency) * 100 + '%">100%</span>'
+        content = content + '<span class="word_frequency">' + word.frequency + '</span>'
+        content = content + '<span class="word_name"><a href="#">' + word.word + '</a></span>'
+        content = content + "</li>"
+        $(content).appendTo("#word_list");
+      });
+      });
     });
   });
-});
-});
 $(document).ajaxStart(function() { $('#ajaxBusy').show();}).ajaxStop(function() { $('#ajaxBusy').hide();});
+});
 </script>                                                               
 </head>                                                                 
 <body>                                                                  
 <h1>Words In Parliament</h1>
-<h2>Most used words in the Australian Parliament on <span id="date"></span> </h2>
+<h2>The last time a debate took place was on <span id="date"></span> </h2>
+<p>Choose the n-gram size (n word combination)
+<select id="ngram" name="ngram">
+  <option value="1">unigram (1)</option>
+  <option value="2">bigram (2)</option>
+  <option value="3">trigram (3)</option>
+</select>
+<button id="doit" type="button">Do it</button>
+</p>
 <div id="words">
   <ol id="word_list">
   </ol>
