@@ -26,5 +26,5 @@ Point your browser at:
 == API
 
 Top words for a given date
-http://localhost:4567/api/representatives/words/for/:year/:month/:day/top:n
+http://localhost:4567/api/representatives/words/for/:year/:month/:day/top:n/ngram:n
 
